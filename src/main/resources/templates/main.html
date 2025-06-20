@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FlipZone - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #0077cc;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .auth-buttons button {
+            background-color: white;
+            color: #0077cc;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            background-color: #f7f7f7;
+        }
+
+        .product-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            width: 250px;
+            height: auto;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .product-card h3 {
+            margin: 0.5rem 0;
+        }
+
+        .product-card p {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .product-card .price {
+            color: green;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .product-card .qty {
+            margin: 0.5rem 0;
+        }
+
+        .buy-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .buy-btn:hover {
+            background-color: #218838;
+        }
+
+        footer {
+            background-color: #222;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand">FlipZone</div>
+    <div class="auth-buttons">
+        <a href="/login"><button>Login</button></a>
+        <a href="/customer/register"><button>Register</button></a>
+    </div>
+</header>
+
+<span style="color:green" th:text="${session.pass}"></span>
+<span style="color:red" th:text="${session.fail}"></span>
+<!-- <span th:text="${@myservice.removeMessage()}"></span> -->
+
+<main>
+    <!-- Product 1 -->
+    <div class="product-card">
+        <img src="https://via.placeholder.com/250x150" alt="Product 1">
+        <h3>Wireless Headphones</h3>
+        <p>High quality sound, noise-cancelling feature.</p>
+        <div class="price">₹1,999</div>
+        <div class="qty">Quantity: 10</div>
+        <button class="buy-btn">Buy Now</button>
+    </div>
+
+    <!-- Product 2 -->
+    <div class="product-card">
+        <img src="https://via.placeholder.com/250x150" alt="Product 2">
+        <h3>Smart Watch</h3>
+        <p>Track your fitness and health easily.</p>
+        <div class="price">₹2,499</div>
+        <div class="qty">Quantity: 5</div>
+        <button class="buy-btn">Buy Now</button>
+    </div>
+
+    <!-- Product 3 -->
+    <div class="product-card">
+        <img src="https://via.placeholder.com/250x150" alt="Product 3">
+        <h3>Bluetooth Speaker</h3>
+        <p>Crystal clear sound in a compact body.</p>
+        <div class="price">₹1,299</div>
+        <div class="qty">Quantity: 8</div>
+        <button class="buy-btn">Buy Now</button>
+    </div>
+</main>
+
+<footer>
+    &copy; 2025 FlipZone. All rights reserved.
+</footer>
+
+</body>
+</html>
