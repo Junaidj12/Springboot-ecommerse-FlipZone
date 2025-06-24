@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -44,42 +44,46 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
     <a class="navbar-brand" href="#">FlipZone Admin</a>
     <div class="ms-auto">
-      <a href="#" class="btn btn-outline-danger">Logout</a>
+      <a href="/logout" class="btn btn-outline-danger">Logout</a>
     </div>
   </nav>
 
   <!-- Form Section -->
   <main>
     <div class="form-section">
+    
+    
       <h2 class="mb-4 text-center">Edit Product</h2>
-      <form action="/admin/update-product" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="id" value="123"> <!-- Dynamic Product ID -->
+     <form th:action="@{/admin/update-product}" th:object="${product}" method="post" enctype="multipart/form-data">
+
+        <input type="hidden" th:field="*{id}" />
 
         <div class="mb-3">
           <label for="productName" class="form-label">Product Name</label>
-          <input type="text" class="form-control" id="productName" name="name" value="Wireless Headphones" required>
+          <input type="text" class="form-control" id="productName" th:field="*{name}" required>
         </div>
 
         <div class="mb-3">
           <label for="productDescription" class="form-label">Description</label>
-          <textarea class="form-control" id="productDescription" name="description" rows="3" required>High-quality headphones with noise cancellation.</textarea>
+          <textarea class="form-control" id="productDescription" th:field="*{description}" rows="3" required></textarea>
         </div>
 
         <div class="mb-3">
           <label for="productStock" class="form-label">Stock</label>
-          <input type="number" class="form-control" id="productStock" name="stock" value="12" required>
+          <input type="number" class="form-control" id="productStock" th:field="*{stock}" required>
         </div>
 
         <div class="mb-3">
           <label for="productPrice" class="form-label">Price (₹)</label>
-          <input type="number" class="form-control" id="productPrice" name="price" value="2999" required>
+          <input type="number" class="form-control" id="productPrice" th:field="*{price}" required>
         </div>
 
         <div class="mb-4">
           <label for="productImage" class="form-label">Product Image</label>
           <input type="file" class="form-control" id="productImage" name="image" accept="image/*">
-          <img src="https://via.placeholder.com/100x70" alt="Current Image" class="current-img">
-          <small class="text-muted d-block">Current image shown above. Upload to replace.</small>
+          <!-- Always show a default image -->
+          <img src="/images/default-product.png" alt="Default Image" class="current-img">
+          <small class="text-muted d-block">Default image shown above. Upload to replace in future versions.</small>
         </div>
 
         <div class="d-grid">

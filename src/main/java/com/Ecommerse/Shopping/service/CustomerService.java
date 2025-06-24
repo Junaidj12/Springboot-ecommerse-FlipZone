@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.Ecommerse.Shopping.config.AES;
 import com.Ecommerse.Shopping.entity.Customer;
+import com.Ecommerse.Shopping.exception.NotLoggedInException;
 import com.Ecommerse.Shopping.repository.CustomerRepository;
 
 import jakarta.servlet.http.HttpSession;
@@ -26,7 +27,9 @@ public class CustomerService {
 	
 	public String register(Customer customer, HttpSession session) {
 		if (customerRepository.existsByEmail(customer.getEmail()) || customerRepository.existsByMobile(customer.getMobile())) {
+			session.setAttribute("fail", "* Account Already Exists");
 			return "redirect:/customer/register";
+			
 		} else {
 			customer.setPassword(AES.encrypt(customer.getPassword()));
 			int otp = new Random().nextInt(100000, 1000000);
@@ -61,5 +64,17 @@ public class CustomerService {
 			session.setAttribute("fail", "Invalid Otp, Try Again");
 			return "redirect:/customer/otp";
 		}
+	}
+	
+	public String loadHome(HttpSession session) {
+		getCustomerFromSession(session);
+		return "customer-home.html";
+	}
+
+	public Customer getCustomerFromSession(HttpSession session) {
+		if(session.getAttribute("customer")==null)
+			throw new NotLoggedInException();
+		else
+			return (Customer) session.getAttribute("customer");
 	}
 }

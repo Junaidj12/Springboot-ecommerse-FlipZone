@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -61,25 +61,27 @@
   <!-- Main Content -->
   <main>
     <div class="container">
+    <div th:if="${session.pass}" class="alert alert-success" role="alert" th:text="${session.pass}"></div>
+<div th:if="${session.fail}" class="alert alert-danger" role="alert" th:text="${session.fail}"></div>
       <h2 class="mb-4 text-center">All Products</h2>
-      <div class="row">
+      <div class="row" th:if="${productList != null}" th:each="product : ${productList}">
 
-        <!-- Example Product Card - repeat dynamically using Thymeleaf or JSTL -->
         <div class="col-md-4">
           <div class="product-card">
-            <img src="https://via.placeholder.com/150" class="product-img" alt="Product Image">
-            <h5>Wireless Headphones</h5>
-            <p class="mb-1 text-muted">Noise-cancelling, long battery life</p>
-            <p class="mb-1">Price: ₹2999</p>
-            <p class="mb-3">Stock: 12</p>
+            <img src="/images/default-product.png" class="product-img" alt="Product Image">
+            
+            <h5 th:text="${product.name}">Product Name</h5>
+            <p class="mb-1 text-muted" th:text="${product.description}">Product Description</p>
+            <p class="mb-1">Price: ₹<span th:text="${product.price}">0</span></p>
+            <p class="mb-3">Stock: <span th:text="${product.stock}">0</span></p>
             <div class="btn-group">
-              <a href="/admin/edit-product/123" class="btn btn-sm btn-primary">Edit</a>
-              <a href="/admin/delete-product/123" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure to delete?')">Delete</a>
+              <a th:href="@{/admin/edit-product(id=${product.id})}" class="btn btn-sm btn-primary">Edit</a>
+             <a th:href="@{/admin/delete-product(id=${product.id})}" 
+       onclick="return confirm('Delete this product?')" 
+       class="btn btn-danger btn-sm">Delete</a>
             </div>
           </div>
         </div>
-
-        <!-- More product cards... dynamically generated -->
 
       </div>
     </div>
