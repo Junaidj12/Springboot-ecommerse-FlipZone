@@ -68,7 +68,7 @@
 
         <div class="col-md-4">
           <div class="product-card">
-            <img src="/images/default-product.png" class="product-img" alt="Product Image">
+            <img th:src="${product.imgLink}" class="product-img" alt="Product Image">
             
             <h5 th:text="${product.name}">Product Name</h5>
             <p class="mb-1 text-muted" th:text="${product.description}">Product Description</p>
