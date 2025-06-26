@@ -1,14 +1,23 @@
 package com.Ecommerse.Shopping.service;
 
+import java.util.Map;
+
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import com.Ecommerse.Shopping.config.AES;
 import com.Ecommerse.Shopping.entity.Customer;
+import com.Ecommerse.Shopping.entity.product;
 import com.Ecommerse.Shopping.repository.CustomerRepository;
+import com.Ecommerse.Shopping.repository.ProductRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -18,6 +27,9 @@ public class Myservice {
 	
 	@Autowired
 	CustomerRepository customerRepository;
+	
+	@Autowired
+	ProductRepository productRepository;
 	
 	@Value("${admin.email}")
 	private String adminEmail;
@@ -71,6 +83,31 @@ public class Myservice {
 		session.setAttribute("fail", "Logout Success");
 		return "redirect:/";
 	}
+
+
+	public Map<String, Object> loadPublicProducts(String name, String sort, boolean desc, String stock, int page, int size) {
+    Sort sorting = desc ? Sort.by(sort).descending() : Sort.by(sort);
+    Pageable pageable = PageRequest.of(page, size, sorting);
+    Page<product> productPage;
+
+    if (stock.equals("in")) {
+        productPage = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, pageable);
+    } else {
+        productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
+    }
+
+    Map<String, Object> map = new HashMap<>();
+    map.put("products", productPage.getContent());
+    map.put("currentPage", page);
+    map.put("totalPages", productPage.getTotalPages());
+    map.put("name", name);
+    map.put("sort", sort);
+    map.put("desc", desc);
+    map.put("stock", stock);
+
+    return map;
+}
+
 
 
 	

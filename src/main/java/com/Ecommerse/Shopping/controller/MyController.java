@@ -27,13 +27,34 @@ public class MyController {
 	ProductRepository productRepository;
 
 	@GetMapping("/")
-	public String loadMain(HttpSession session, ModelMap map) {
-		 map.put("pass", session.getAttribute("pass"));
-		    map.put("fail", session.getAttribute("fail"));
-	    myservice.removeMessage(); 
-	    map.addAttribute("products", productRepository.findAll()); 
+	public String loadMainPage(
+	        @RequestParam(defaultValue = "") String name,
+	        @RequestParam(defaultValue = "price-asc") String sort,  // sort value can be 'price-asc' or 'price-desc'
+	        @RequestParam(defaultValue = "all") String stock,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "6") int size,
+	        HttpSession session,
+	        ModelMap map) {
+
+	    boolean desc = false;
+	    String sortField = "price";
+
+	    if (sort.equals("price-desc")) {
+	        desc = true;
+	    }
+
+	    // Prepare session messages
+	    map.put("pass", session.getAttribute("pass"));
+	    map.put("fail", session.getAttribute("fail"));
+
+	    // Load products
+	    map.addAllAttributes(myservice.loadPublicProducts(name, sortField, desc, stock, page, size));
+	    myservice.removeMessage();
+
 	    return "main";
 	}
+
+
 	@GetMapping("/login")
 	public String loadLogin(HttpSession session) {
 	    return "login.html";

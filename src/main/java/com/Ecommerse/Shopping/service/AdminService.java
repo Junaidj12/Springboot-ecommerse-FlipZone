@@ -7,6 +7,10 @@ import java.util.Map;
 import org.apache.catalina.startup.ClassLoaderFactory.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,16 +88,30 @@ public class AdminService {
 
 	}
 
-	public String manageProduct(ModelMap modelMap, HttpSession session) {
-		isLoggedIn(session);
-		List<product> products = productRepository.findAll();
-		if (products.isEmpty()) {
-			session.setAttribute("fail", "No Products Found");
-			return "redirect:/admin/home";
+	public String manageProduct(ModelMap model, HttpSession session, String name, String sort, boolean desc,
+			String stock, int page, int size) {
+
+		Sort sorting = desc ? Sort.by(sort).descending() : Sort.by(sort);
+		Pageable pageable = PageRequest.of(page, size, sorting);
+
+		Page<product> productPage;
+
+		if (stock.equals("in")) {
+			productPage = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, pageable);
 		} else {
-			modelMap.put("products", products);
-			return "manage-product.html";
+			productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
 		}
+
+		model.addAttribute("productList", productPage.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", productPage.getTotalPages());
+
+		model.addAttribute("name", name);
+		model.addAttribute("sort", sort);
+		model.addAttribute("desc", desc);
+		model.addAttribute("stock", stock);
+
+		return "manage-product.html";
 	}
 
 	public String deleteProduct(Long id, HttpSession session) {

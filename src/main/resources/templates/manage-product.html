@@ -93,8 +93,38 @@
   <div class="container">
     <h2 class="mb-4 text-center">All Products</h2>
 
+    <!-- Filters -->
+    <form method="get" th:action="@{/admin/manage-products}" class="row mb-4">
+      <div class="col-md-3 mb-2">
+        <input type="text" name="name" class="form-control" placeholder="Search by name"
+               th:value="${name}">
+      </div>
+      <div class="col-md-3 mb-2">
+        <select name="sort" class="form-select">
+          <option value="price" th:selected="${sort == 'price'}">Price</option>
+          <option value="stock" th:selected="${sort == 'stock'}">Stock</option>
+        </select>
+      </div>
+      <div class="col-md-2 mb-2">
+        <select name="desc" class="form-select">
+          <option value="false" th:selected="${!desc}">Asc</option>
+          <option value="true" th:selected="${desc}">Desc</option>
+        </select>
+      </div>
+      <div class="col-md-2 mb-2">
+        <select name="stock" class="form-select">
+          <option value="all" th:selected="${stock == 'all'}">All</option>
+          <option value="in" th:selected="${stock == 'in'}">In Stock</option>
+        </select>
+      </div>
+      <div class="col-md-2 mb-2">
+        <button type="submit" class="btn btn-primary w-100">Apply</button>
+      </div>
+    </form>
+
+    <!-- Product Grid -->
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-      <div class="col" th:each="product : ${products}">
+      <div class="col" th:each="product : ${productList}">
         <div class="product-card h-100">
           <img th:src="${product.imgLink}" class="product-img" alt="Product Image">
           <h5 th:text="${product.name}">Product Name</h5>
@@ -110,6 +140,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Pagination -->
+    <nav th:if="${totalPages > 1}" class="mt-5">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+          <a class="page-link"
+             th:href="@{/admin/manage-products(name=${name}, sort=${sort}, stock=${stock}, desc=${desc}, page=${currentPage - 1}, size=6)}">«</a>
+        </li>
+        <li class="page-item"
+            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+            th:classappend="${i == currentPage} ? 'active'">
+          <a class="page-link"
+             th:href="@{/admin/manage-products(name=${name}, sort=${sort}, stock=${stock}, desc=${desc}, page=${i}, size=6)}"
+             th:text="${i + 1}">1</a>
+        </li>
+        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+          <a class="page-link"
+             th:href="@{/admin/manage-products(name=${name}, sort=${sort}, stock=${stock}, desc=${desc}, page=${currentPage + 1}, size=6)}">»</a>
+        </li>
+      </ul>
+    </nav>
+
   </div>
 </main>
 
@@ -129,11 +181,10 @@
       const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
       toast.show();
     });
-
-    // Clear server-side toast messages
     fetch('/clear-toast');
   });
 </script>
 
 </body>
 </html>
+	

@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.SimpleMailMessage;
@@ -86,42 +89,23 @@ public class CustomerService {
 			return (Customer) session.getAttribute("customer");
 	}
 
-	public String loadProductsForCustomer(HttpSession session, ModelMap model, String name, String sort, String stock) {
+	public String loadProductsForCustomer(HttpSession session, ModelMap model, String name, String sort, boolean desc,
+			String stock, int page, int size) {
 
-		String sortField = "id";
-		boolean desc = false;
+		Sort sorting = desc ? Sort.by(sort).descending() : Sort.by(sort);
+		Pageable pageable = PageRequest.of(page, size, sorting);
 
-		switch (sort) {
-		case "low":
-			sortField = "price";
-			desc = false;
-			break;
-		case "high":
-			sortField = "price";
-			desc = true;
-			break;
-		case "stock":
-			sortField = "stock";
-			desc = true;
-			break;
-		default:
-			sortField = "id";
-		}
-
-		Sort sorting = desc ? Sort.by(sortField).descending() : Sort.by(sortField);
-		List<product> products;
+		Page<product> productPage;
 
 		if (stock.equals("in")) {
-			products = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, sorting);
+			productPage = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, pageable);
 		} else {
-			products = productRepository.findByNameContainingIgnoreCase(name, sorting);
+			productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
 		}
 
-		if (products.isEmpty()) {
-			session.setAttribute("fail", "No Products Found");
-		}
-
-		model.addAttribute("productList", products);
+		model.addAttribute("productList", productPage.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", productPage.getTotalPages());
 		return "customer-home.html";
 	}
 

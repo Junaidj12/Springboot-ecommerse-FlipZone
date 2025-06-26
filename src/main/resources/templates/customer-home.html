@@ -145,15 +145,31 @@ footer {
 			</div>
 		</div>
 
-		<nav class="mt-5">
+		<nav th:if="${totalPages > 1}" class="mt-5">
 			<ul class="pagination justify-content-center">
-				<li class="page-item disabled"><a class="page-link" href="#">«</a></li>
-				<li class="page-item active"><a class="page-link" href="#">1</a></li>
-				<li class="page-item"><a class="page-link" href="#">2</a></li>
-				<li class="page-item"><a class="page-link" href="#">3</a></li>
-				<li class="page-item"><a class="page-link" href="#">»</a></li>
+				<li class="page-item"
+					th:classappend="${currentPage == 0} ? 'disabled'"><a
+					class="page-link"
+					th:href="@{/customer/home(name=${param.name}, sort=${param.sort}, stock=${param.stock}, desc=${param.desc}, page=${currentPage - 1}, size=6)}">«</a>
+				</li>
+
+				<li class="page-item"
+					th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+					th:classappend="${i == currentPage} ? 'active'"><a
+					class="page-link"
+					th:href="@{/customer/home(name=${param.name}, sort=${param.sort}, stock=${param.stock}, desc=${param.desc}, page=${i}, size=6)}"
+					th:text="${i + 1}">1</a></li>
+
+				<li class="page-item"
+					th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+					<a class="page-link"
+					th:href="@{/customer/home(name=${param.name}, sort=${param.sort}, stock=${param.stock}, desc=${param.desc}, page=${currentPage + 1}, size=6)}">»</a>
+				</li>
 			</ul>
 		</nav>
+
+
+
 
 	</main>
 

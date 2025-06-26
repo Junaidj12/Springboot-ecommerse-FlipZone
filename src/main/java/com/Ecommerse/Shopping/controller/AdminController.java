@@ -43,9 +43,19 @@ public class AdminController {
 	}
 
 	@GetMapping("/manage-products")
-	public String showAllProducts(ModelMap modelMap, HttpSession session) {
-	   return adminService.manageProduct(modelMap,session);
+	public String showAllProducts(
+	        @RequestParam(defaultValue = "") String name,
+	        @RequestParam(defaultValue = "price") String sort,
+	        @RequestParam(defaultValue = "false") boolean desc,
+	        @RequestParam(defaultValue = "all") String stock,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "6") int size,
+	        ModelMap modelMap,
+	        HttpSession session) {
+	    
+	    return adminService.manageProduct(modelMap, session, name, sort, desc, stock, page, size);
 	}
+
 	@GetMapping("/edit-product")
 	public String editProduct(HttpSession session,@RequestParam Long id, ModelMap map) {
 	    return adminService.editProduct(session, id, map);
