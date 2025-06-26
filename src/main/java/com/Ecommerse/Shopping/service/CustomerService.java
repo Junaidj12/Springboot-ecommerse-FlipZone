@@ -1,35 +1,43 @@
 package com.Ecommerse.Shopping.service;
 
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.ModelMap;
 
 import com.Ecommerse.Shopping.config.AES;
 import com.Ecommerse.Shopping.entity.Customer;
+import com.Ecommerse.Shopping.entity.product;
 import com.Ecommerse.Shopping.exception.NotLoggedInException;
 import com.Ecommerse.Shopping.repository.CustomerRepository;
+import com.Ecommerse.Shopping.repository.ProductRepository;
 
 import jakarta.servlet.http.HttpSession;
 
 @Service
 public class CustomerService {
-	
+
 	@Autowired
 	private JavaMailSender mailSender;
-	
+
 	@Autowired
 	private CustomerRepository customerRepository;
-	
-	
+
+	@Autowired
+	private ProductRepository productRepository;
+
 	public String register(Customer customer, HttpSession session) {
-		if (customerRepository.existsByEmail(customer.getEmail()) || customerRepository.existsByMobile(customer.getMobile())) {
+		if (customerRepository.existsByEmail(customer.getEmail())
+				|| customerRepository.existsByMobile(customer.getMobile())) {
 			session.setAttribute("fail", "* Account Already Exists");
 			return "redirect:/customer/register";
-			
+
 		} else {
 			customer.setPassword(AES.encrypt(customer.getPassword()));
 			int otp = new Random().nextInt(100000, 1000000);
@@ -52,7 +60,7 @@ public class CustomerService {
 			System.err.println("Sending Mail Failed but OTP is : " + otp);
 		}
 	}
-	
+
 	public String submitOtp(int otp, HttpSession session) {
 		int generatedOtp = (int) session.getAttribute("otp");
 		Customer customer = (Customer) session.getAttribute("register");
@@ -65,16 +73,56 @@ public class CustomerService {
 			return "redirect:/customer/otp";
 		}
 	}
-	
+
 	public String loadHome(HttpSession session) {
 		getCustomerFromSession(session);
 		return "customer-home.html";
 	}
 
 	public Customer getCustomerFromSession(HttpSession session) {
-		if(session.getAttribute("customer")==null)
+		if (session.getAttribute("customer") == null)
 			throw new NotLoggedInException();
 		else
 			return (Customer) session.getAttribute("customer");
 	}
+
+	public String loadProductsForCustomer(HttpSession session, ModelMap model, String name, String sort, String stock) {
+
+		String sortField = "id";
+		boolean desc = false;
+
+		switch (sort) {
+		case "low":
+			sortField = "price";
+			desc = false;
+			break;
+		case "high":
+			sortField = "price";
+			desc = true;
+			break;
+		case "stock":
+			sortField = "stock";
+			desc = true;
+			break;
+		default:
+			sortField = "id";
+		}
+
+		Sort sorting = desc ? Sort.by(sortField).descending() : Sort.by(sortField);
+		List<product> products;
+
+		if (stock.equals("in")) {
+			products = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, sorting);
+		} else {
+			products = productRepository.findByNameContainingIgnoreCase(name, sorting);
+		}
+
+		if (products.isEmpty()) {
+			session.setAttribute("fail", "No Products Found");
+		}
+
+		model.addAttribute("productList", products);
+		return "customer-home.html";
+	}
+
 }

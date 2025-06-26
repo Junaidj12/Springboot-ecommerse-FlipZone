@@ -43,27 +43,20 @@ public class AdminController {
 	}
 
 	@GetMapping("/manage-products")
-	public String showAllProducts(ModelMap modelMap) {
-	    List<product> products = productRepository.findAll();
-	    modelMap.addAttribute("productList", products);
-	    return "manage-product.html";
+	public String showAllProducts(ModelMap modelMap, HttpSession session) {
+	   return adminService.manageProduct(modelMap,session);
 	}
 	@GetMapping("/edit-product")
-	public String editProduct(@RequestParam Long id, ModelMap map) {
-	    product product = productRepository.findById(id).orElse(null);
-	    map.addAttribute("product", product);
-	    return "edit-product.html"; 
+	public String editProduct(HttpSession session,@RequestParam Long id, ModelMap map) {
+	    return adminService.editProduct(session, id, map);
 	}
 	@PostMapping("/update-product")
 	public String updateProduct(@ModelAttribute product updatedProduct, HttpSession session) {
-	    adminService.updateProduct(updatedProduct, session);
-	    return "redirect:/admin/manage-products";
+	   return adminService.updateProduct(updatedProduct, session);
 	}
 	@GetMapping("/delete-product")
 	public String deleteProduct(@RequestParam Long id, HttpSession session) {
-	    productRepository.deleteById(id);
-	    session.setAttribute("pass", "Product deleted successfully!");
-	    return "redirect:/admin/manage-products";
+	   return adminService.deleteProduct(id, session);
 	}
 
 	
