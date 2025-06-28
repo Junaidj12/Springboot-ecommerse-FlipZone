@@ -91,7 +91,16 @@ public class AdminService {
 	public String manageProduct(ModelMap model, HttpSession session, String name, String sort, boolean desc,
 			String stock, int page, int size) {
 
-		Sort sorting = desc ? Sort.by(sort).descending() : Sort.by(sort);
+		Sort sorting = Sort.by("name"); // default
+
+		if ("price-asc".equals(sort)) {
+		    sorting = Sort.by("price").ascending();
+		} else if ("price-desc".equals(sort)) {
+		    sorting = Sort.by("price").descending();
+		} else if ("stock-desc".equals(sort)) {
+		    sorting = Sort.by("stock").descending();
+		}
+
 		Pageable pageable = PageRequest.of(page, size, sorting);
 
 		Page<product> productPage;

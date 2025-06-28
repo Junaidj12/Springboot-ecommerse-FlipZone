@@ -1,135 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shopping Cart - FlipZone</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    html, body {
-      height: 100%;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-    main {
-      flex: 1;
-    }
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-    }
-    .product-img {
-      height: 50px;
-      width: 50px;
-      object-fit: cover;
-    }
-    footer {
-      background-color: #343a40;
-      color: #fff;
-      padding: 15px 0;
-      text-align: center;
-    }
-    .quantity-btn {
-      min-width: 36px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shopping Cart - FlipZone</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<style>
+html, body {
+	height: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+main {
+	flex: 1;
+}
+
+.navbar-brand {
+	font-weight: bold;
+	font-size: 1.5rem;
+}
+
+.product-img {
+	height: 50px;
+	width: 50px;
+	object-fit: cover;
+}
+
+footer {
+	background-color: #343a40;
+	color: #fff;
+	padding: 15px 0;
+	text-align: center;
+}
+
+.quantity-btn {
+	min-width: 36px;
+}
+</style>
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-light bg-light px-4 justify-content-between">
-    <span class="navbar-brand mb-0 h1">FlipZone</span>
-    <a href="login.html" class="btn btn-danger">Logout</a>
-  </nav>
+	<!-- Navbar -->
+	<nav class="navbar navbar-light bg-light px-4 justify-content-between">
+		<span class="navbar-brand mb-0 h1">FlipZone</span> <a href="/logout"
+			class="btn btn-danger">Logout</a>
+	</nav>
 
-  <!-- Cart Content -->
-  <main class="container py-4">
-    <h2 class="mb-4">Your Shopping Cart</h2>
+	<!-- Cart Content -->
+	<main class="container py-4">
+		<h2 class="mb-4">Your Shopping Cart</h2>
 
-    <div class="table-responsive">
-      <table class="table align-middle text-center">
-        <thead class="table-secondary">
-          <tr>
-            <th>Image</th>
-            <th>Product</th>
-            <th>Price (₹)</th>
-            <th>Quantity</th>
-            <th>Subtotal (₹)</th>
-          </tr>
-        </thead>
-        <tbody id="cart-body">
-          <!-- Row 1 -->
-          <tr>
-            <td><img src="https://via.placeholder.com/50" class="product-img" alt="Product 1"></td>
-            <td>Wireless Earbuds</td>
-            <td>1999</td>
-            <td>
-              <div class="d-flex justify-content-center align-items-center">
-                <button class="btn btn-outline-secondary btn-sm quantity-btn" onclick="updateQty(this, -1)">−</button>
-                <span class="mx-2 qty">1</span>
-                <button class="btn btn-outline-secondary btn-sm quantity-btn" onclick="updateQty(this, 1)">+</button>
-              </div>
-            </td>
-            <td class="subtotal">1999</td>
-          </tr>
+		<div class="table-responsive"
+			th:if="${cartItems != null and !cartItems.isEmpty()}">
+			<table class="table align-middle text-center">
+				<thead class="table-secondary">
+					<tr>
+						<th>Image</th>
+						<th>Product</th>
+						<th>Price (₹)</th>
+						<th>Quantity</th>
+						<th>Subtotal (₹)</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="item : ${cartItems}">
+						<td><img th:src="${item.product.imgLink}" class="product-img"
+							alt="Image"></td>
+						<td th:text="${item.product.name}">Product</td>
+						<td th:text="${item.product.price}">0</td>
+						<td>
+							<div class="d-flex justify-content-center align-items-center">
+								<form th:action="@{/customer/cart/update}" method="post"
+									class="d-flex">
+									<input type="hidden" name="_method" value="post" /> <input
+										type="hidden" name="productId" th:value="${item.product.id}" />
+									<button class="btn btn-outline-secondary btn-sm quantity-btn"
+										name="change" value="-1">−</button>
+									<span class="mx-2 qty" th:text="${item.quantity}">1</span>
+									<button class="btn btn-outline-secondary btn-sm quantity-btn"
+										name="change" value="1">+</button>
+								</form>
+								
 
-          <!-- Row 2 -->
-          <tr>
-            <td><img src="https://via.placeholder.com/50" class="product-img" alt="Product 2"></td>
-            <td>Smartwatch</td>
-            <td>2499</td>
-            <td>
-              <div class="d-flex justify-content-center align-items-center">
-                <button class="btn btn-outline-secondary btn-sm quantity-btn" onclick="updateQty(this, -1)">−</button>
-                <span class="mx-2 qty">2</span>
-                <button class="btn btn-outline-secondary btn-sm quantity-btn" onclick="updateQty(this, 1)">+</button>
-              </div>
-            </td>
-            <td class="subtotal">4998</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+							</div>
+						</td>
+						<td class="subtotal"
+							th:text="${item.quantity * item.product.price}">0</td>
+						<td>
+							<form th:action="@{/customer/buy-now}" method="post">
+								<input type="hidden" name="productId"
+									th:value="${item.product.id}" />
+								<button type="submit" class="btn btn-sm btn-success">Buy
+									Now</button>
+							</form>
+						</td>
 
-    <!-- Total Price -->
-    <div class="text-end">
-      <h4>Total: ₹<span id="total-price">6997</span></h4>
-      <a href="checkout.html" class="btn btn-success mt-3">Proceed to Checkout</a>
-    </div>
-  </main>
+					</tr>
+				</tbody>
 
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <p>&copy; 2025 FlipZone. All rights reserved.</p>
-    </div>
-  </footer>
+			</table>
+		</div>
 
-  <!-- Quantity & Total Price Script -->
-  <script>
-    function updateQty(button, change) {
-      const qtySpan = button.parentElement.querySelector('.qty');
-      let qty = parseInt(qtySpan.textContent);
-      qty = Math.max(1, qty + change); // Min quantity = 1
-      qtySpan.textContent = qty;
+		<!-- Empty Cart Message -->
+		<div class="text-center"
+			th:if="${cartItems == null or cartItems.isEmpty()}">
+			<p class="text-muted">Your cart is empty.</p>
+			<a href="/customer/home" class="btn btn-primary">Continue
+				Shopping</a>
+		</div>
 
-      const row = button.closest('tr');
-      const price = parseInt(row.children[2].textContent);
-      row.querySelector('.subtotal').textContent = price * qty;
+		<!-- Total Price -->
+		<div class="text-end mt-4"
+			th:if="${cartItems != null and !cartItems.isEmpty()}">
+			<h4>
+				Total: ₹<span id="total-price" th:text="${totalPrice}">0</span>
+			</h4>
+			<a href="/checkout" class="btn btn-success mt-3">Proceed to
+				Checkout</a>
+		</div>
+	</main>
 
-      updateTotal();
-    }
-
-    function updateTotal() {
-      let total = 0;
-      document.querySelectorAll('.subtotal').forEach(cell => {
-        total += parseInt(cell.textContent);
-      });
-      document.getElementById('total-price').textContent = total;
-    }
-  </script>
+	<!-- Footer -->
+	<footer>
+		<div class="container">
+			<p>&copy; 2025 FlipZone. All rights reserved.</p>
+		</div>
+	</footer>
 
 </body>
 </html>

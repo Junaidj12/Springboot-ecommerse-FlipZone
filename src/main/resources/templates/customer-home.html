@@ -67,7 +67,7 @@ footer {
 
 .toast {
 	position: fixed;
-	top: 20px;
+	top: 50px;
 	right: 20px;
 	padding: 1rem 1.5rem;
 	border-radius: 8px;
@@ -91,8 +91,11 @@ footer {
 <body>
 
 	<nav class="navbar navbar-light bg-light px-4 justify-content-between">
-		<span class="navbar-brand mb-0 h1">FlipZone</span> <a href="/logout"
-			class="btn btn-danger">Logout</a>
+		<span class="navbar-brand mb-0 h1">FlipZone</span>
+		<div>
+			<a href="/customer/cart" class="btn btn-outline-primary me-2">Cart</a>
+			<a href="/logout" class="btn btn-danger">Logout</a>
+		</div>
 	</nav>
 
 	<div class="toast success" id="toastSuccess" th:if="${session.pass}"
@@ -104,31 +107,34 @@ footer {
 
 		<form method="get" th:action="@{/customer/home}">
 			<div class="row mb-4">
-				<div class="col-md-4 mb-2">
+				<div class="col-md-3 mb-2">
 					<input type="text" name="name" class="form-control"
-						placeholder="Search by product name..." th:value="${param.name}">
+						placeholder="Search by product name..." th:value="${name}">
 				</div>
-				<div class="col-md-4 mb-2">
+				<div class="col-md-3 mb-2">
 					<select name="sort" class="form-select">
 						<option value="">Sort by</option>
-						<option value="low">Price: Low to High</option>
-						<option value="high">Price: High to Low</option>
-						<option value="stock">Stock Available</option>
+						<option value="price-asc" th:selected="${sort == 'price-asc'}">Price:
+							Low to High</option>
+						<option value="price-desc" th:selected="${sort == 'price-desc'}">Price:
+							High to Low</option>
+						<option value="stock" th:selected="${sort == 'stock'}">Stock:
+							High to Low</option>
 					</select>
-
 				</div>
-				<div class="col-md-4 mb-2">
+
+				<div class="col-md-3 mb-2">
+					<input type="hidden" name="desc" th:value="${desc}" />
 					<button class="btn btn-primary w-100" type="submit">Apply
-						Filter</button>
+						Filters</button>
 				</div>
 			</div>
 		</form>
 
-
 		<h2 class="mb-4 text-center">Available Products</h2>
 
 		<div class="row g-4">
-			<div class="col-md-4 col-sm-6" th:each="product : ${productList}">
+			<div class="col-md-4 col-sm-6" th:each="product : ${products}">
 				<div class="product-card">
 					<div class="product-img-wrapper">
 						<img
@@ -140,7 +146,14 @@ footer {
 					<p>
 						<strong th:text="'₹' + ${product.price}">₹0</strong>
 					</p>
-					<button class="btn btn-primary">Add to Cart</button>
+					<p>
+						Stock: <span th:text="${product.stock}">0</span>
+					</p>
+					<form th:action="@{/customer/add-to-cart}" method="post">
+						<input type="hidden" name="productId" th:value="${product.id}" />
+						<button class="btn btn-primary" type="submit">Add to Cart</button>
+					</form>
+
 				</div>
 			</div>
 		</div>
@@ -150,26 +163,23 @@ footer {
 				<li class="page-item"
 					th:classappend="${currentPage == 0} ? 'disabled'"><a
 					class="page-link"
-					th:href="@{/customer/home(name=${param.name}, sort=${param.sort}, stock=${param.stock}, desc=${param.desc}, page=${currentPage - 1}, size=6)}">«</a>
+					th:href="@{/customer/home(name=${name}, sort=${sort}, stock=${stock}, desc=${desc}, page=${currentPage - 1}, size=6)}">«</a>
 				</li>
 
 				<li class="page-item"
 					th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
 					th:classappend="${i == currentPage} ? 'active'"><a
 					class="page-link"
-					th:href="@{/customer/home(name=${param.name}, sort=${param.sort}, stock=${param.stock}, desc=${param.desc}, page=${i}, size=6)}"
+					th:href="@{/customer/home(name=${name}, sort=${sort}, stock=${stock}, desc=${desc}, page=${i}, size=6)}"
 					th:text="${i + 1}">1</a></li>
 
 				<li class="page-item"
 					th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
 					<a class="page-link"
-					th:href="@{/customer/home(name=${param.name}, sort=${param.sort}, stock=${param.stock}, desc=${param.desc}, page=${currentPage + 1}, size=6)}">»</a>
+					th:href="@{/customer/home(name=${name}, sort=${sort}, stock=${stock}, desc=${desc}, page=${currentPage + 1}, size=6)}">»</a>
 				</li>
 			</ul>
 		</nav>
-
-
-
 
 	</main>
 
@@ -180,18 +190,20 @@ footer {
 	</footer>
 
 	<script>
-  const toastSuccess = document.getElementById('toastSuccess');
-  const toastFail = document.getElementById('toastFail');
+	const toastSuccess = document.getElementById('toastSuccess');
+	const toastFail = document.getElementById('toastFail');
 
-  [toastSuccess, toastFail].forEach(toast => {
-    if (toast) {
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        fetch('/clear-toast');
-      }, 3000);
-    }
-  });
+	[toastSuccess, toastFail].forEach(toast => {
+		if (toast) {
+			toast.style.display = 'block';  // ✅ Make it visible
+			setTimeout(() => {
+				toast.style.opacity = '0';
+				fetch('/clear-toast');
+			}, 3000);
+		}
+	});
 </script>
+
 
 </body>
 </html>

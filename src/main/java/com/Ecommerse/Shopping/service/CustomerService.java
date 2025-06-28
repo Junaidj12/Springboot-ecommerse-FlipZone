@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
 import com.Ecommerse.Shopping.config.AES;
+import com.Ecommerse.Shopping.entity.CartItem;
 import com.Ecommerse.Shopping.entity.Customer;
 import com.Ecommerse.Shopping.entity.product;
 import com.Ecommerse.Shopping.exception.NotLoggedInException;
+import com.Ecommerse.Shopping.repository.CartItemRepository;
 import com.Ecommerse.Shopping.repository.CustomerRepository;
 import com.Ecommerse.Shopping.repository.ProductRepository;
 
@@ -34,6 +36,9 @@ public class CustomerService {
 
 	@Autowired
 	private ProductRepository productRepository;
+
+	@Autowired
+	private CartItemRepository cartItemRepository;
 
 	public String register(Customer customer, HttpSession session) {
 		if (customerRepository.existsByEmail(customer.getEmail())
@@ -89,24 +94,112 @@ public class CustomerService {
 			return (Customer) session.getAttribute("customer");
 	}
 
-	public String loadProductsForCustomer(HttpSession session, ModelMap model, String name, String sort, boolean desc,
-			String stock, int page, int size) {
+	public String loadProductsForCustomer(HttpSession session, ModelMap model, String name, String sortParam,
+			boolean desc, String stock, int page, int size) {
+		String sortField = "name"; // default
+		Sort.Direction direction = Sort.Direction.ASC; // default
 
-		Sort sorting = desc ? Sort.by(sort).descending() : Sort.by(sort);
-		Pageable pageable = PageRequest.of(page, size, sorting);
+// Map frontend sortParam to field & direction
+		switch (sortParam) {
+		case "price-asc":
+			sortField = "price";
+			direction = Sort.Direction.ASC;
+			break;
+		case "price-desc":
+			sortField = "price";
+			direction = Sort.Direction.DESC;
+			break;
+		case "stock":
+			sortField = "stock";
+			direction = Sort.Direction.DESC;
+			break;
+		case "name":
+		default:
+			sortField = "name";
+			direction = Sort.Direction.ASC;
+			break;
+		}
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
 
 		Page<product> productPage;
-
-		if (stock.equals("in")) {
+		if ("in".equalsIgnoreCase(stock)) {
 			productPage = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, pageable);
 		} else {
 			productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
 		}
 
-		model.addAttribute("productList", productPage.getContent());
+		model.addAttribute("products", productPage.getContent());
 		model.addAttribute("currentPage", page);
 		model.addAttribute("totalPages", productPage.getTotalPages());
+
+// Preserve filters for pagination
+		model.addAttribute("name", name);
+		model.addAttribute("sort", sortParam);
+		model.addAttribute("stock", stock);
+		model.addAttribute("size", size);
+
 		return "customer-home.html";
 	}
+
+	public String addToCart(Long productId, HttpSession session) {
+	    Customer customer = (Customer) session.getAttribute("customer");
+	    if (customer == null) {
+	        session.setAttribute("fail", "Please login to add items to cart.");
+	        return "redirect:/login";
+	    }
+
+	    product product = productRepository.findById(productId).orElse(null);
+	    if (product == null) {
+	        session.setAttribute("fail", "Product not found.");
+	        return "redirect:/customer/home";
+	    }
+
+	    CartItem existing = cartItemRepository.findByCustomerAndProduct(customer, product);
+	    if (existing != null) {
+	        existing.setQuantity(existing.getQuantity() + 1);
+	        cartItemRepository.save(existing);
+	    } else {
+	        CartItem item = new CartItem();
+	        item.setCustomer(customer);
+	        item.setProduct(product);
+	        item.setQuantity(1);
+	        cartItemRepository.save(item);
+	    }
+
+	    session.setAttribute("pass", "Added to cart successfully!");
+	    return "redirect:/customer/home";
+	}
+
+
+	public List<CartItem> getCartItems(Customer customer) {
+		return cartItemRepository.findByCustomer(customer);
+	}
+
+	public long calculateTotal(List<CartItem> cartItems) {
+	    final long[] total = {0};
+	    cartItems.forEach(item -> {
+	        total[0] += item.getQuantity() * item.getProduct().getPrice();
+	    });
+	    return total[0];
+	}
+
+	public void updateCartQuantity(Customer customer, Long productId, int change) {
+	    CartItem item = cartItemRepository.findByCustomerAndProduct(customer, productRepository.findById(productId).orElse(null));
+	    if (item != null) {
+	        int newQty = item.getQuantity() + change;
+	        if (newQty <= 0) {
+	            cartItemRepository.delete(item);
+	        } else {
+	            item.setQuantity(newQty);
+	            cartItemRepository.save(item);
+	        }
+	    }
+	}
+
+
+
+
+
 
 }

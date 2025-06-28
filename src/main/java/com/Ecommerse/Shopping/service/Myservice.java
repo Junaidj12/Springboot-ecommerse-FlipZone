@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -24,48 +25,47 @@ import jakarta.servlet.http.HttpSession;
 
 @Service
 public class Myservice {
-	
+
 	@Autowired
 	CustomerRepository customerRepository;
-	
+
 	@Autowired
 	ProductRepository productRepository;
-	
+
 	@Value("${admin.email}")
 	private String adminEmail;
 	@Value("${admin.password}")
 	private String adminPassword;
 
 	public String login(String email, String password, HttpSession session) {
-	    if (email.equals(adminEmail) && password.equals(adminPassword)) {
-	        session.setAttribute("admin", "admin");
-	        session.setAttribute("pass", "Login Success, Welcome Admin");
-	        return "redirect:/admin/home";
-	    } else {
-	        Customer customer = customerRepository.findByEmail(email);
-	        if (customer == null) {
-	            session.setAttribute("fail", "Invalid Email");
-	            return "redirect:/login";
-	        } else {
-	            try {
-	                String decrypted = AES.decrypt(customer.getPassword());
-	                if (decrypted != null && decrypted.equals(password)) {
-	                    session.setAttribute("pass", "Login Success, Welcome " + customer.getFullname());
-	                    session.setAttribute("customer", customer);
-	                    return "redirect:/customer/home";
-	                } else {
-	                    session.setAttribute("fail", "Invalid Password Try Again");
-	                    return "redirect:/login";
-	                }
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	                session.setAttribute("fail", "Error decrypting password. Contact support.");
-	                return "redirect:/login";
-	            }
-	        }
-	    }
+		if (email.equals(adminEmail) && password.equals(adminPassword)) {
+			session.setAttribute("admin", "admin");
+			session.setAttribute("pass", "Login Success, Welcome Admin");
+			return "redirect:/admin/home";
+		} else {
+			Customer customer = customerRepository.findByEmail(email);
+			if (customer == null) {
+				session.setAttribute("fail", "Invalid Email");
+				return "redirect:/login";
+			} else {
+				try {
+					String decrypted = AES.decrypt(customer.getPassword());
+					if (decrypted != null && decrypted.equals(password)) {
+						session.setAttribute("pass", "Login Success, Welcome " + customer.getFullname());
+						session.setAttribute("customer", customer);
+						return "redirect:/customer/home";
+					} else {
+						session.setAttribute("fail", "Invalid Password Try Again");
+						return "redirect:/login";
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					session.setAttribute("fail", "Error decrypting password. Contact support.");
+					return "redirect:/login";
+				}
+			}
+		}
 	}
-
 
 	public void removeMessage() {
 		RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
@@ -84,32 +84,46 @@ public class Myservice {
 		return "redirect:/";
 	}
 
+	public String loadProductsForCustomer(HttpSession session, ModelMap model, String name, String sortParam,
+			boolean desc, String stock, int page, int size) {
 
-	public Map<String, Object> loadPublicProducts(String name, String sort, boolean desc, String stock, int page, int size) {
-    Sort sorting = desc ? Sort.by(sort).descending() : Sort.by(sort);
-    Pageable pageable = PageRequest.of(page, size, sorting);
-    Page<product> productPage;
+		Sort sort = Sort.by("name"); // default sort
 
-    if (stock.equals("in")) {
-        productPage = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, pageable);
-    } else {
-        productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
-    }
+		switch (sortParam) {
+		case "price-asc":
+			sort = Sort.by("price").ascending();
+			break;
+		case "price-desc":
+			sort = Sort.by("price").descending();
+			break;
+		case "stock-desc":
+			sort = Sort.by("stock").descending();
+			break;
+		default:
+			sort = Sort.by("name").ascending();
+		}
 
-    Map<String, Object> map = new HashMap<>();
-    map.put("products", productPage.getContent());
-    map.put("currentPage", page);
-    map.put("totalPages", productPage.getTotalPages());
-    map.put("name", name);
-    map.put("sort", sort);
-    map.put("desc", desc);
-    map.put("stock", stock);
+		Pageable pageable = PageRequest.of(page, size, sort);
+		Page<product> productPage;
 
-    return map;
-}
+		if ("in".equalsIgnoreCase(stock)) {
+			productPage = productRepository.findByNameContainingIgnoreCaseAndStockGreaterThan(name, 0, pageable);
+		} else {
+			productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
+		}
 
+		model.addAttribute("products", productPage.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", productPage.getTotalPages());
 
+// Preserve filter values
+		model.addAttribute("name", name);
+		model.addAttribute("sort", sortParam);
+		model.addAttribute("stock", stock);
+		model.addAttribute("desc", desc);
+		model.addAttribute("size", size);
 
-	
+		return "main";
+	}
 
 }
