@@ -67,21 +67,24 @@ public class CustomerController {
 
 	@GetMapping("/cart")
 	public String cart(HttpSession session, ModelMap model) {
-		Customer customer = (Customer) session.getAttribute("customer");
+	    Customer customer = (Customer) session.getAttribute("customer");
 
-		if (customer == null) {
-			session.setAttribute("fail", "Please login to view cart.");
-			return "redirect:/login";
-		}
+	    if (customer == null) {
+	        session.setAttribute("fail", "Please login to view cart.");
+	        return "redirect:/login";
+	    }
 
-		List<CartItem> cartItems = customerService.getCartItems(customer);
-		model.addAttribute("cartItems", cartItems);
+	    List<CartItem> cartItems = customerService.getCartItems(customer);
+	    model.addAttribute("cartItems", cartItems);
 
-		long total = customerService.calculateTotal(cartItems);
-		model.addAttribute("totalPrice", total);
+	    long total = customerService.calculateTotal(cartItems);
+	    model.addAttribute("totalPrice", total);
 
-		return "cart.html";
+	    model.addAttribute("customer", customer); // ✅ REQUIRED for Razorpay prefill
+
+	    return "cart.html";
 	}
+
 
 	@PostMapping("/add-to-cart")
 	public String addToCart(@RequestParam Long productId, HttpSession session) {
