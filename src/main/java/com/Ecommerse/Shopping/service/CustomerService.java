@@ -1,6 +1,7 @@
 package com.Ecommerse.Shopping.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,12 @@ import org.springframework.ui.ModelMap;
 import com.Ecommerse.Shopping.config.AES;
 import com.Ecommerse.Shopping.entity.CartItem;
 import com.Ecommerse.Shopping.entity.Customer;
+import com.Ecommerse.Shopping.entity.Order;
 import com.Ecommerse.Shopping.entity.product;
 import com.Ecommerse.Shopping.exception.NotLoggedInException;
 import com.Ecommerse.Shopping.repository.CartItemRepository;
 import com.Ecommerse.Shopping.repository.CustomerRepository;
+import com.Ecommerse.Shopping.repository.OrderRepository;
 import com.Ecommerse.Shopping.repository.ProductRepository;
 
 import jakarta.servlet.http.HttpSession;
@@ -39,6 +42,9 @@ public class CustomerService {
 
 	@Autowired
 	private CartItemRepository cartItemRepository;
+
+	@Autowired
+	private OrderRepository orderRepository;
 
 	public String register(Customer customer, HttpSession session) {
 		if (customerRepository.existsByEmail(customer.getEmail())
@@ -143,34 +149,33 @@ public class CustomerService {
 	}
 
 	public String addToCart(Long productId, HttpSession session) {
-	    Customer customer = (Customer) session.getAttribute("customer");
-	    if (customer == null) {
-	        session.setAttribute("fail", "Please login to add items to cart.");
-	        return "redirect:/login";
-	    }
+		Customer customer = (Customer) session.getAttribute("customer");
+		if (customer == null) {
+			session.setAttribute("fail", "Please login to add items to cart.");
+			return "redirect:/login";
+		}
 
-	    product product = productRepository.findById(productId).orElse(null);
-	    if (product == null) {
-	        session.setAttribute("fail", "Product not found.");
-	        return "redirect:/customer/home";
-	    }
+		product product = productRepository.findById(productId).orElse(null);
+		if (product == null) {
+			session.setAttribute("fail", "Product not found.");
+			return "redirect:/customer/home";
+		}
 
-	    CartItem existing = cartItemRepository.findByCustomerAndProduct(customer, product);
-	    if (existing != null) {
-	        existing.setQuantity(existing.getQuantity() + 1);
-	        cartItemRepository.save(existing);
-	    } else {
-	        CartItem item = new CartItem();
-	        item.setCustomer(customer);
-	        item.setProduct(product);
-	        item.setQuantity(1);
-	        cartItemRepository.save(item);
-	    }
+		CartItem existing = cartItemRepository.findByCustomerAndProduct(customer, product);
+		if (existing != null) {
+			existing.setQuantity(existing.getQuantity() + 1);
+			cartItemRepository.save(existing);
+		} else {
+			CartItem item = new CartItem();
+			item.setCustomer(customer);
+			item.setProduct(product);
+			item.setQuantity(1);
+			cartItemRepository.save(item);
+		}
 
-	    session.setAttribute("pass", "Added to cart successfully!");
-	    return "redirect:/customer/home";
+		session.setAttribute("pass", "Added to cart successfully!");
+		return "redirect:/customer/home";
 	}
-
 
 	public List<CartItem> getCartItems(Customer customer) {
 		return cartItemRepository.findByCustomer(customer);
@@ -196,6 +201,42 @@ public class CustomerService {
 	        }
 	    }
 	}
+
+	public void createOrderForProduct(Customer customer, Long productId, String paymentId) {
+	    product product = productRepository.findById(productId).orElse(null);
+	    if (product == null) return;
+
+	    CartItem cartItem = cartItemRepository.findByCustomerAndProduct(customer, product);
+	    if (cartItem != null) {
+	        Order order = new Order();
+	        order.setCustomer(customer);
+	        order.setProduct(product);
+	        order.setQuantity(cartItem.getQuantity());
+	        order.setAmount(cartItem.getQuantity() * product.getPrice());
+	        order.setRazorpayPaymentId(paymentId);
+
+	
+	        order.setOrderDate(java.time.LocalDateTime.now());
+
+	        orderRepository.save(order);
+	        cartItemRepository.delete(cartItem);
+	    }
+	}
+
+
+	public List<Order> getOrdersForCustomer(Customer customer) {
+	    return orderRepository.findByCustomer(customer);
+	}
+	public Page<Order> getOrdersWithPagination(Customer customer, int page, int size, String sortField, boolean desc) {
+	    Sort sort = desc ? Sort.by(sortField).descending() : Sort.by(sortField).ascending();
+	    Pageable pageable = PageRequest.of(page, size, sort);
+	    return orderRepository.findByCustomer(customer, pageable);
+	}
+
+	public Order getOrderById(Long id) {
+	    return orderRepository.findById(id).orElse(null);
+	}
+
 
 
 

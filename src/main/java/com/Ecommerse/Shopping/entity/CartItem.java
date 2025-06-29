@@ -51,6 +51,11 @@ public class CartItem {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
+
+	public CartItem orElse(Object object) {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
     
 }

@@ -1,14 +1,23 @@
 package com.Ecommerse.Shopping.controller;
 
 import java.util.List;
+import java.util.Map;
 
+import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import com.Ecommerse.Shopping.entity.CartItem;
 import com.Ecommerse.Shopping.entity.Customer;
+import com.Ecommerse.Shopping.entity.Order;
+import com.Ecommerse.Shopping.repository.OrderRepository;
 import com.Ecommerse.Shopping.repository.ProductRepository;
 import com.Ecommerse.Shopping.service.AdminService;
 import com.Ecommerse.Shopping.service.CustomerService;
@@ -27,6 +36,9 @@ public class CustomerController {
 
 	@Autowired
 	private ProductRepository productRepository;
+	
+	@Autowired
+	private OrderRepository orderRepository;
 
 	@GetMapping("/register")
 	public String loadRegister() {
@@ -123,6 +135,79 @@ public class CustomerController {
 	    session.setAttribute("pass", "Purchased product with ID: " + productId);
 	    return "redirect:/customer/cart";
 	}
+	@PostMapping("/payment-success")
+	@ResponseBody
+	public ResponseEntity<String> handlePaymentSuccess(@RequestBody Map<String, String> data, HttpSession session) {
+	    Customer customer = (Customer) session.getAttribute("customer");
+	    if (customer == null) {
+	        return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body("Login required");
+	    }
+
+	    Long productId = Long.parseLong(data.get("productId"));
+	    String paymentId = data.get("razorpayPaymentId");
+
+	    customerService.createOrderForProduct(customer, productId, paymentId);
+	    return ResponseEntity.ok("Order placed and cart updated.");
+	}
+	@GetMapping("/orders")
+	public String viewOrders(HttpSession session, ModelMap model) {
+	    Customer customer = (Customer) session.getAttribute("customer");
+
+	    if (customer == null) {
+	        session.setAttribute("fail", "Please login to view your orders.");
+	        return "redirect:/login";
+	    }
+
+	    List<Order> orders = customerService.getOrdersForCustomer(customer);
+	    model.addAttribute("orders", orders);
+	    return "my-orders.html"; // view page
+	}
+	@GetMapping("/my-orders")
+	public String myOrders(
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "5") int size,
+	        HttpSession session,
+	        ModelMap model
+	) {
+	    Customer customer = (Customer) session.getAttribute("customer");
+	    if (customer == null) {
+	        session.setAttribute("fail", "Please login.");
+	        return "redirect:/login";
+	    }
+
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
+	    Page<Order> paginatedOrders = orderRepository.findByCustomer(customer, pageable);
+
+	    model.addAttribute("orders", paginatedOrders.getContent());
+	    model.addAttribute("currentPage", page);
+	    model.addAttribute("totalPages", paginatedOrders.getTotalPages());
+	    model.addAttribute("size", size);
+
+	    return "my-orders.html";
+	}
+	@GetMapping("/order-invoice/{orderId}")
+	public String downloadInvoice(@PathVariable Long orderId, ModelMap model, HttpSession session) {
+	    Customer customer = (Customer) session.getAttribute("customer");
+	    if (customer == null) {
+	        session.setAttribute("fail", "Please login.");
+	        return "redirect:/login";
+	    }
+
+	    Order order = customerService.getOrderById(orderId);
+	    if (order == null || !order.getCustomer().getId().equals(customer.getId())) {
+	        session.setAttribute("fail", "Unauthorized or invalid order.");
+	        return "redirect:/customer/my-orders";
+	    }
+
+	    model.addAttribute("order", order);
+	    return "order-invoice.html"; // ✅ View that renders the receipt
+	}
+
+
+
+
+
+
 
 
 }
