@@ -1,7 +1,9 @@
 package com.Ecommerse.Shopping.controller;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,16 +13,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import com.Ecommerse.Shopping.entity.CartItem;
 import com.Ecommerse.Shopping.entity.Customer;
 import com.Ecommerse.Shopping.entity.Order;
+import com.Ecommerse.Shopping.entity.OrderStatus;
 import com.Ecommerse.Shopping.repository.OrderRepository;
 import com.Ecommerse.Shopping.repository.ProductRepository;
 import com.Ecommerse.Shopping.service.AdminService;
 import com.Ecommerse.Shopping.service.CustomerService;
+import com.Ecommerse.Shopping.service.OrderService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -33,6 +38,9 @@ public class CustomerController {
 
 	@Autowired
 	private AdminService adminService;
+	
+	@Autowired
+	private OrderService orderService;
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -163,28 +171,26 @@ public class CustomerController {
 	    return "my-orders.html"; // view page
 	}
 	@GetMapping("/my-orders")
-	public String myOrders(
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "5") int size,
-	        HttpSession session,
-	        ModelMap model
-	) {
-	    Customer customer = (Customer) session.getAttribute("customer");
-	    if (customer == null) {
-	        session.setAttribute("fail", "Please login.");
-	        return "redirect:/login";
-	    }
+	public String viewMyOrders(Model model, Principal principal,
+	                           @RequestParam(defaultValue = "0") int page,
+	                           @RequestParam(defaultValue = "5") int size,
+	                           @RequestParam(defaultValue = "orderDate") String sort,
+	                           @RequestParam(defaultValue = "true") boolean desc) {
 
-	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
-	    Page<Order> paginatedOrders = orderRepository.findByCustomer(customer, pageable);
+	    Customer customer = customerService.findByEmail(principal.getName());
+	    Page<Order> orderPage = customerService.getOrdersWithPagination(customer, page, size, sort, desc);
 
-	    model.addAttribute("orders", paginatedOrders.getContent());
+	    model.addAttribute("orders", orderPage.getContent());
 	    model.addAttribute("currentPage", page);
-	    model.addAttribute("totalPages", paginatedOrders.getTotalPages());
+	    model.addAttribute("totalPages", orderPage.getTotalPages());
 	    model.addAttribute("size", size);
+	    model.addAttribute("sort", sort);
+	    model.addAttribute("desc", desc);
 
-	    return "my-orders.html";
+	    return "customer-orders";
 	}
+
+
 	@GetMapping("/order-invoice/{orderId}")
 	public String downloadInvoice(@PathVariable Long orderId, ModelMap model, HttpSession session) {
 	    Customer customer = (Customer) session.getAttribute("customer");
@@ -202,6 +208,15 @@ public class CustomerController {
 	    model.addAttribute("order", order);
 	    return "order-invoice.html"; // ✅ View that renders the receipt
 	}
+	public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
+	    Optional<Order> optionalOrder = orderRepository.findById(orderId);
+	    if (optionalOrder.isPresent()) {
+	        Order order = optionalOrder.get();
+	        order.setStatus(newStatus); // ✅ Pass enum directly
+	        orderRepository.save(order);
+	    }
+	}
+
 
 
 

@@ -28,13 +28,14 @@ public class Order {
 
     private LocalDateTime orderDate;
 
-    private String status; // NEW: PLACED, SHIPPED, DELIVERED, etc.
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status; // PLACED, SHIPPED, DELIVERED, etc.
 
     // Default constructor
     public Order() {}
 
     // Parameterized constructor
-    public Order(String razorpayPaymentId, double amount, Customer customer, product product, int quantity, String status) {
+    public Order(String razorpayPaymentId, double amount, Customer customer, product product, int quantity, OrderStatus status) {
         this.razorpayPaymentId = razorpayPaymentId;
         this.amount = amount;
         this.customer = customer;
@@ -101,11 +102,11 @@ public class Order {
         this.orderDate = orderDate;
     }
 
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 }

@@ -19,7 +19,9 @@ import com.Ecommerse.Shopping.config.AES;
 import com.Ecommerse.Shopping.entity.CartItem;
 import com.Ecommerse.Shopping.entity.Customer;
 import com.Ecommerse.Shopping.entity.Order;
+import com.Ecommerse.Shopping.entity.OrderStatus;
 import com.Ecommerse.Shopping.entity.product;
+import com.Ecommerse.Shopping.exception.CustomerNotFoundException;
 import com.Ecommerse.Shopping.exception.NotLoggedInException;
 import com.Ecommerse.Shopping.repository.CartItemRepository;
 import com.Ecommerse.Shopping.repository.CustomerRepository;
@@ -47,8 +49,7 @@ public class CustomerService {
 	private OrderRepository orderRepository;
 
 	public String register(Customer customer, HttpSession session) {
-		if (customerRepository.existsByEmail(customer.getEmail())
-				|| customerRepository.existsByMobile(customer.getMobile())) {
+		if (customerRepository.existsByEmail(customer.getEmail())) {
 			session.setAttribute("fail", "* Account Already Exists");
 			return "redirect:/customer/register";
 
@@ -233,9 +234,17 @@ public class CustomerService {
 	    return orderRepository.findByCustomer(customer, pageable);
 	}
 
+
 	public Order getOrderById(Long id) {
 	    return orderRepository.findById(id).orElse(null);
 	}
+
+	public Customer findByEmail(String email) {
+	    return customerRepository.findByEmail(email)
+	            .orElseThrow(() -> new CustomerNotFoundException("Customer not found with email: " + email));
+	}
+
+	
 
 
 

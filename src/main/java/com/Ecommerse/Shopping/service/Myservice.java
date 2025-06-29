@@ -1,7 +1,7 @@
 package com.Ecommerse.Shopping.service;
 
 import java.util.Map;
-
+import java.util.Optional;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,27 +43,30 @@ public class Myservice {
 			session.setAttribute("pass", "Login Success, Welcome Admin");
 			return "redirect:/admin/home";
 		} else {
-			Customer customer = customerRepository.findByEmail(email);
-			if (customer == null) {
-				session.setAttribute("fail", "Invalid Email");
-				return "redirect:/login";
+			Optional<Customer> optionalCustomer = customerRepository.findByEmail(email);
+
+			if (optionalCustomer.isEmpty()) {
+			    session.setAttribute("fail", "Invalid Email");
+			    return "redirect:/login";
 			} else {
-				try {
-					String decrypted = AES.decrypt(customer.getPassword());
-					if (decrypted != null && decrypted.equals(password)) {
-						session.setAttribute("pass", "Login Success, Welcome " + customer.getFullname());
-						session.setAttribute("customer", customer);
-						return "redirect:/customer/home";
-					} else {
-						session.setAttribute("fail", "Invalid Password Try Again");
-						return "redirect:/login";
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					session.setAttribute("fail", "Error decrypting password. Contact support.");
-					return "redirect:/login";
-				}
+			    Customer customer = optionalCustomer.get();
+			    try {
+			        String decrypted = AES.decrypt(customer.getPassword());
+			        if (decrypted != null && decrypted.equals(password)) {
+			            session.setAttribute("pass", "Login Success, Welcome " + customer.getFullname());
+			            session.setAttribute("customer", customer);
+			            return "redirect:/customer/home";
+			        } else {
+			            session.setAttribute("fail", "Invalid Password Try Again");
+			            return "redirect:/login";
+			        }
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			        session.setAttribute("fail", "Error decrypting password. Contact support.");
+			        return "redirect:/login";
+			    }
 			}
+
 		}
 	}
 
