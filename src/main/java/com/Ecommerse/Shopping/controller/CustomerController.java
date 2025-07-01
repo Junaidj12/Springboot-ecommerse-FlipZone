@@ -21,6 +21,7 @@ import com.Ecommerse.Shopping.entity.CartItem;
 import com.Ecommerse.Shopping.entity.Customer;
 import com.Ecommerse.Shopping.entity.Order;
 import com.Ecommerse.Shopping.entity.OrderStatus;
+import com.Ecommerse.Shopping.entity.product;
 import com.Ecommerse.Shopping.repository.OrderRepository;
 import com.Ecommerse.Shopping.repository.ProductRepository;
 import com.Ecommerse.Shopping.service.AdminService;
@@ -216,6 +217,16 @@ public class CustomerController {
 	        orderRepository.save(order);
 	    }
 	}
+	@GetMapping("/product/{id}")
+	public String viewProductDetails(@PathVariable Long id, Model model) {
+	    product p = customerService.findById(id); // Assuming you have a method like this
+	    if (p == null) {
+	        return "redirect:/customer/home"; // fallback
+	    }
+	    model.addAttribute("product", p);
+	    return "product-details";
+	}
+
 
 
 

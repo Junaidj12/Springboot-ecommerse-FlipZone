@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.Ecommerse.Shopping.entity.product;
 import com.Ecommerse.Shopping.exception.NotLoggedInException;
+import com.Ecommerse.Shopping.repository.OrderRepository;
 import com.Ecommerse.Shopping.repository.ProductRepository;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
@@ -28,6 +29,10 @@ public class AdminService {
 
 	@Autowired
 	ProductRepository productRepository;
+	
+	@Autowired
+	private OrderRepository orderRepository;
+
 
 	@Value("${CLOUDINARY_URL}")
 	private String url;
@@ -136,5 +141,17 @@ public class AdminService {
 		map.put("product", product);
 		return "edit-product.html";
 	}
+	public long getTotalOrders() {
+	    return orderRepository.count();
+	}
+
+	public double getTotalSales() {
+	    Double total = orderRepository.getTotalSalesAmount();
+	    return total != null ? total : 0.0;
+	}
+
+
+
+	
 
 }

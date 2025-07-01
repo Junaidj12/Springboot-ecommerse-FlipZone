@@ -91,13 +91,16 @@ public class AdminController {
 	    orderService.updateOrderStatus(orderId, status);
 	    return "redirect:/admin/manage-orders";
 	}
+	@GetMapping("/dashboard")
+	public String viewDashboard(ModelMap modelMap) {
+	    long totalOrders = adminService.getTotalOrders();
+	    double totalSales = adminService.getTotalSales();
 
+	    modelMap.addAttribute("totalOrders", totalOrders);
+	    modelMap.addAttribute("totalSales", totalSales);
 
-
-
-
-	
-
+	    return "admin-dashboard";
+	}
 
 
 	

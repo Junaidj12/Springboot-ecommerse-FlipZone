@@ -1,19 +1,25 @@
 package com.Ecommerse.Shopping.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.Ecommerse.Shopping.config.AES;
 import com.Ecommerse.Shopping.entity.CartItem;
@@ -244,7 +250,37 @@ public class CustomerService {
 	            .orElseThrow(() -> new CustomerNotFoundException("Customer not found with email: " + email));
 	}
 
-	
+	@PostMapping("/payment-success-all")
+	public ResponseEntity<?> handleFullCartPayment(@RequestBody Map<String, Object> payload, HttpSession session) {
+	    String razorpayPaymentId = (String) payload.get("razorpayPaymentId");
+
+	    Customer customer = (Customer) session.getAttribute("customer");
+	    if (customer == null) {
+	        return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body("Customer not logged in");
+	    }
+
+	    List<CartItem> cartItems = cartItemRepository.findByCustomer(customer);
+	    for (CartItem item : cartItems) {
+	        Order order = new Order();
+	        order.setCustomer(customer);
+	        order.setProduct(item.getProduct());
+	        order.setQuantity(item.getQuantity());
+	        order.setAmount(item.getProduct().getPrice() * item.getQuantity());
+	        order.setOrderDate(LocalDateTime.now());
+	        order.setStatus(OrderStatus.PLACED);
+	        order.setRazorpayPaymentId(razorpayPaymentId);
+	        orderRepository.save(order);
+	        cartItemRepository.delete(item); // remove from cart
+	    }
+
+	    return ResponseEntity.ok("Cart payment success");
+	}
+
+	public product findById(Long id) {
+	    return productRepository.findById(id).orElse(null);
+	}
+
+
 
 
 
