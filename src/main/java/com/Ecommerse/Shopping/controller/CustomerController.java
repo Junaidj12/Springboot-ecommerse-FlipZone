@@ -76,7 +76,7 @@ public class CustomerController {
 			@RequestParam(defaultValue = "false") boolean desc,
 			@RequestParam(defaultValue = "all") String stock,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "6") int size) {
+			@RequestParam(defaultValue = "12") int size) {
 
 		if (session.getAttribute("customer") == null) {
 			session.setAttribute("fail", "Invalid session. Please login again");

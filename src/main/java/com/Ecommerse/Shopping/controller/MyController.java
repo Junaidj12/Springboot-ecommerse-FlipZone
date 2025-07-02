@@ -35,7 +35,7 @@ public class MyController {
 	        @RequestParam(defaultValue = "false") boolean desc,
 	        @RequestParam(defaultValue = "all") String stock,
 	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "6") int size
+	        @RequestParam(defaultValue = "12") int size
 	) {
 
 	    return myservice.loadProductsForCustomer(session, model, name, sort, desc, stock, page, size);

@@ -99,12 +99,14 @@ public class Myservice {
 		case "price-desc":
 			sort = Sort.by("price").descending();
 			break;
+		case "stock":  // <-- fix here
 		case "stock-desc":
 			sort = Sort.by("stock").descending();
 			break;
 		default:
 			sort = Sort.by("name").ascending();
-		}
+	}
+
 
 		Pageable pageable = PageRequest.of(page, size, sort);
 		Page<product> productPage;
