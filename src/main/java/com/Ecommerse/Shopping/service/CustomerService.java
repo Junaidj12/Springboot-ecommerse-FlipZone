@@ -112,7 +112,6 @@ public class CustomerService {
 		String sortField = "name"; // default
 		Sort.Direction direction = Sort.Direction.ASC; // default
 
-// Map frontend sortParam to field & direction
 		switch (sortParam) {
 		case "price-asc":
 			sortField = "price";
