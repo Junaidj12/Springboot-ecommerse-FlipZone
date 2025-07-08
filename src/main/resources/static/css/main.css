@@ -1,0 +1,269 @@
+@charset "UTF-8";
+/* Global Variables */
+:root {
+  --primary: #6f42c1;
+  --secondary: #f8f9fa;
+  --text-dark: #343a40;
+  --text-light: #6c757d;
+  --gradient: linear-gradient(135deg, #6f42c1, #6610f2);
+}
+
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #ffffff;
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+/* Navbar */
+.navbar {
+  background: white;
+  border-bottom: 1px solid #eee;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 0 50px;
+}
+
+.navbar-brand {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.navbar-buttons a {
+  text-decoration: none;
+  color: var(--primary);
+  margin-left: 15px;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.navbar-buttons a:hover {
+  color: #4b28a3;
+}
+
+/* Hero Section */
+.hero {
+  background: var(--gradient);
+  color: white;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.hero .btn-primary,
+.hero .btn-outline-light {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 8px;
+  margin: 10px;
+}
+
+/* Feature Icons */
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px 20px;
+  background-color: var(--secondary);
+  text-align: center;
+}
+
+.feature {
+  max-width: 180px;
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+/* Filter Section */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin: 30px auto;
+}
+
+.filters input,
+.filters select,
+.filters button {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.filters button {
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.filters button:hover {
+  background: #4b28a3;
+}
+
+/* Product Grid */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+  margin: 30px auto;
+}
+
+/* Product Card */
+.product-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.product-img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+/* Hide extra product cards by default (if not using JS) */
+.extra-product {
+  display: none !important;
+}
+
+.show-more-btn {
+  background: var(--primary);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.show-more-btn:hover {
+  background: #4b28a3;
+}
+
+/* Product Info */
+.product-details h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.star-rating {
+  color: #fbc02d;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.product-original-price {
+  font-size: 0.9rem;
+  color: #aaa;
+  text-decoration: line-through;
+  margin-left: 5px;
+}
+
+/* Cart Button */
+.cart-button {
+  margin-top: 10px;
+  display: inline-block;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  transition: background 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.cart-button:hover {
+  background-color: #4b28a3;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  gap: 10px;
+}
+
+.pagination .page-item a,
+.pagination .page-item span {
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.pagination .page-item.active span {
+  background: var(--primary);
+  color: white;
+}
+
+/* Footer */
+.footer {
+  background-color: #1e1e2f;
+  color: white;
+  padding: 40px 20px;
+}
+
+.footer h5 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.footer p,
+.footer a {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+}

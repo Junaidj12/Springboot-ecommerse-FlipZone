@@ -18,7 +18,6 @@ import com.Ecommerse.Shopping.entity.OrderStatus;
 import com.Ecommerse.Shopping.entity.product;
 import com.Ecommerse.Shopping.repository.ProductRepository;
 import com.Ecommerse.Shopping.service.AdminService;
-import com.Ecommerse.Shopping.service.CustomerService;
 import com.Ecommerse.Shopping.service.OrderService;
 
 import jakarta.servlet.http.HttpSession;

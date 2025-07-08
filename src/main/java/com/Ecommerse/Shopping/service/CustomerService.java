@@ -3,7 +3,6 @@ package com.Ecommerse.Shopping.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 import org.apache.hc.core5.http.HttpStatus;
@@ -112,6 +111,7 @@ public class CustomerService {
 		String sortField = "name"; // default
 		Sort.Direction direction = Sort.Direction.ASC; // default
 
+// Map frontend sortParam to field & direction
 		switch (sortParam) {
 		case "price-asc":
 			sortField = "price";

@@ -1,8 +1,6 @@
 package com.Ecommerse.Shopping.service;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -99,7 +97,7 @@ public class Myservice {
 		case "price-desc":
 			sort = Sort.by("price").descending();
 			break;
-		case "stock":  // <-- fix here
+		case "stock":  
 		case "stock-desc":
 			sort = Sort.by("stock").descending();
 			break;

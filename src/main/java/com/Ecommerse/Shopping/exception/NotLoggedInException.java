@@ -1,4 +1,4 @@
-package com.Ecommerse.Shopping.exception;
+	package com.Ecommerse.Shopping.exception;
 
 public class NotLoggedInException extends RuntimeException{
 	

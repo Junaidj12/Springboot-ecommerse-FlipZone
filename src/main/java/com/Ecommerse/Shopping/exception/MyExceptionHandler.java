@@ -20,5 +20,3 @@ public class MyExceptionHandler {
 			return "404.html";
 		}
 }
-
-

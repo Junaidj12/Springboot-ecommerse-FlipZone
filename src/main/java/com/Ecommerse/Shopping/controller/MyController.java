@@ -45,7 +45,7 @@ public class MyController {
 
 	@GetMapping("/login")
 	public String loadLogin(HttpSession session) {
-	    return "login.html";
+	    return "login";
 	}
 	@PostMapping("/login")
 	public String adminlogin(@RequestParam String email ,@RequestParam String password, HttpSession session) {
